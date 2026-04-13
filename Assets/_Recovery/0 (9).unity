@@ -537,7 +537,7 @@ GameObject:
   - component: {fileID: 808571610}
   m_Layer: 0
   m_Name: Water
-  m_TagString: Untagged
+  m_TagString: Water
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -816,11 +816,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b0716cb3fe74f4746976660d8f4377fb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LiquidSimulation
-  waterDropPrefap: {fileID: 0}
+  waterDropPrefap: {fileID: 808571609}
   waterSpawnPoint: {fileID: 1786620246}
-  spawnedWaterParent: {fileID: 0}
+  spawnedWaterParent: {fileID: 808571613}
   waterTagName: Water
-  totalDropsToSpawn: 10
+  totalDropsToSpawn: 80
   secondsBetweenDrops: 0.1
   waitBeforeStarting: 0.1
   addRandomXOffset: 1
@@ -853,7 +853,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0.70941997, y: 4.95376, z: 0}
-  m_LocalScale: {x: 0.3544, y: 1.2882, z: 1}
+  m_LocalScale: {x: 0.3544, y: 1.15938, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1252605755}
@@ -1095,8 +1095,8 @@ Transform:
   m_GameObject: {fileID: 1786620245}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0.71342003, y: 4.19076, z: 0}
-  m_LocalScale: {x: 0.49191347, y: -0.2377, z: 1}
+  m_LocalPosition: {x: 0.71342003, y: 4.224, z: 0}
+  m_LocalScale: {x: 0.68321866, y: -0.33014154, z: 1.3889}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1252605755}

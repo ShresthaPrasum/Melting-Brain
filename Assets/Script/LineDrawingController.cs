@@ -144,7 +144,7 @@ public class LineDrawingController : MonoBehaviour
         currentLineRigidbody.bodyType = RigidbodyType2D.Kinematic;
         currentLineRigidbody.gravityScale = 0f;
         currentLineRigidbody.simulated = false;
-        currentLineRigidbody.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+        currentLineRigidbody.collisionDetectionMode = CollisionDetectionMode2D.Discrete;
         currentLineRigidbody.constraints = freezeLineRotationAfterRelease
             ? RigidbodyConstraints2D.FreezeRotation
             : RigidbodyConstraints2D.None;

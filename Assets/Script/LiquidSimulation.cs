@@ -1,31 +1,44 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class LiquidSimulation : MonoBehaviour
 {
+	[Header("Water Setup")]
 	[SerializeField] private GameObject waterDropPrefap;
 	[SerializeField] private Transform waterSpawnPoint;
 	[SerializeField] private Transform spawnedWaterParent;
 	
 	[SerializeField] private string waterTagName = "Water";
 
+	[Header("Spawn Tuning")]
 	[SerializeField] private int totalDropsToSpawn = 120;
 	[SerializeField] private float secondsBetweenDrops = 0.03f;
 	[SerializeField] private float waitBeforeStarting = 0.1f;
 
 	[SerializeField] private bool addRandomXOffset = true;
-
 	[SerializeField] private float maxRandomXOffset = 0.05f;
 
 	private Coroutine spawnRoutine;
 	private int spawnedDropCount;
+	private List<GameObject> dropPool = new List<GameObject>();
 
 	public bool IsSpawningWater => spawnRoutine !=null;
-
 	public int SpawnedDropCount => spawnedDropCount;
-
 	public event Action FinishedSpawningWater;
+
+	private void Start()
+	{
+		if (waterDropPrefap == null) return;
+		
+		for (int i = 0; i < totalDropsToSpawn; i++)
+		{
+			GameObject drop = Instantiate(waterDropPrefap, spawnedWaterParent != null ? spawnedWaterParent : transform);
+			drop.SetActive(false);
+			dropPool.Add(drop);
+		}
+	}
 
 	public void StartSpawningWater()
 	{
@@ -40,7 +53,7 @@ public class LiquidSimulation : MonoBehaviour
 			return;
 		}
 
-		spawnedDropCount = 0 ;
+		spawnedDropCount = 0;
 		spawnRoutine = StartCoroutine(SpawnWaterRoutine());
 	}
 
@@ -59,23 +72,18 @@ public class LiquidSimulation : MonoBehaviour
 		StopSpawningWater();
 		spawnedDropCount = 0 ;
 
-		if(spawnedWaterParent != null)
+		for (int i = 0; i < dropPool.Count; i++)
 		{
-			for(int i = spawnedWaterParent.childCount-1;i>=0;i--)
+			if (dropPool[i] != null)
 			{
-				Destroy(spawnedWaterParent.GetChild(i).gameObject);
+				dropPool[i].SetActive(false);
+				
+				if (dropPool[i].TryGetComponent(out Rigidbody2D rb))
+				{
+					rb.linearVelocity = Vector2.zero;
+					rb.angularVelocity = 0f;
+				}
 			}
-			return;
-		}
-		if(string.IsNullOrWhiteSpace(waterTagName))
-		{
-			return;	
-		}
-		GameObject[] drops = GameObject.FindGameObjectsWithTag(waterTagName);
-
-		for(int i = 0; i< drops.Length;i++)
-		{
-			Destroy(drops[i]);
 		}
 	}
 
@@ -86,9 +94,9 @@ public class LiquidSimulation : MonoBehaviour
 			yield return new WaitForSeconds(waitBeforeStarting);
 		}
 
-		while(spawnedDropCount<totalDropsToSpawn)
+		while(spawnedDropCount<totalDropsToSpawn && spawnedDropCount < dropPool.Count)
 		{
-			SpawnOneDrop();
+			SpawnOneDrop(dropPool[spawnedDropCount]);
 			spawnedDropCount++;
 
 			if(secondsBetweenDrops>0f)
@@ -104,7 +112,7 @@ public class LiquidSimulation : MonoBehaviour
 		FinishedSpawningWater?.Invoke();
 	}
 
-	private void SpawnOneDrop()
+	private void SpawnOneDrop(GameObject dropToSpawn)
 	{
 		Vector3 spawnPosition = waterSpawnPoint.position;
 
@@ -113,20 +121,12 @@ public class LiquidSimulation : MonoBehaviour
 			spawnPosition.x += UnityEngine.Random.Range(-maxRandomXOffset,maxRandomXOffset);
 		}
 
-		if(spawnedWaterParent !=null)
-		{
-			Instantiate(waterDropPrefap, spawnPosition, Quaternion.identity, spawnedWaterParent);
-
-		}
-
-		else
-		{
-			Instantiate(waterDropPrefap, spawnPosition, Quaternion.identity);
-		}
+		dropToSpawn.transform.position = spawnPosition;
+		dropToSpawn.SetActive(true);
 	}
 
 	private void OnDisable()
 	{
 		StopSpawningWater();
 	}
- }
+}
