@@ -109,7 +109,7 @@ public class LineDrawingController : MonoBehaviour
             FinishCurrentLine();
         }
     }
-
+    // /kill @e drawnlines iykyk
     public void ClearAllDrawnLines()
     {
         bool wasDrawing = isCurrentlyDrawing;
@@ -165,6 +165,7 @@ public class LineDrawingController : MonoBehaviour
         currentLineObject = new GameObject("PlayerLine_" + (finishedLineCount + 1));
         currentLineObject.transform.SetParent(transform, true);
 
+    // RIgidibody this is my favourite part
         currentLineRigidbody = currentLineObject.AddComponent<Rigidbody2D>();
         currentLineRigidbody.bodyType = RigidbodyType2D.Kinematic;
         currentLineRigidbody.gravityScale = 0f;
@@ -421,6 +422,7 @@ public class LineDrawingController : MonoBehaviour
         return false;
     }
 
+    // THIS IS TOO MUCH IG
     private bool TryGetClampedPointAtBlockingCollider(Vector2 fromWorldPoint, Vector2 toWorldPoint, out Vector2 clampedPoint)
     {
         clampedPoint = toWorldPoint;
@@ -693,3 +695,5 @@ public class LineDrawingController : MonoBehaviour
         }
     }
 }
+
+// BACKPAIN IS KILLING ME!!

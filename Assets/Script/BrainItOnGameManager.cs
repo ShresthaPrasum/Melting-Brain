@@ -5,6 +5,10 @@ using System.Collections;
 using TMPro;
 using UnityEngine.SceneManagement;
 
+#if ENABLE_INPUT_SYSTEM
+using UnityEngine.InputSystem;
+#endif
+
 public class BrainItOnGameManager : MonoBehaviour
 {
     [Header("Scene References")]
@@ -41,7 +45,10 @@ public class BrainItOnGameManager : MonoBehaviour
     [SerializeField] private string levelEndShapesNeededPrefix = "Shapes Needed: ";
     [SerializeField] private string levelEndTimeTakenPrefix = "Time Taken: ";
     [SerializeField] private string levelEndTimeTakenSuffix = "s";
-    [SerializeField] private string homeSceneName = "Levels";
+    [SerializeField] private string homeSceneName = "Home";
+
+    [Header("Level Progress")]
+    [SerializeField] private int currentLevelNumberOverride = 0;
 
     private bool isLevelWon = false;
     private bool ballFrozenByDrawing;
@@ -101,6 +108,12 @@ public class BrainItOnGameManager : MonoBehaviour
 
     private void Update()
     {
+        if (WasEscapePressedThisFrame())
+        {
+            GoToHomePage();
+            return;
+        }
+
         if (!isReleaseTimerRunning || isLevelWon || isLevelTimedOut)
         {
             return;
@@ -114,6 +127,15 @@ public class BrainItOnGameManager : MonoBehaviour
             HandleLevelTimedOut();
         }
     }
+
+        private static bool WasEscapePressedThisFrame()
+        {
+    #if ENABLE_INPUT_SYSTEM
+        return Keyboard.current != null && Keyboard.current.escapeKey.wasPressedThisFrame;
+    #else
+        return Input.GetKeyDown(KeyCode.Escape);
+    #endif
+        }
 
     private void Start()
     {
@@ -146,6 +168,11 @@ public class BrainItOnGameManager : MonoBehaviour
 
         isLevelWon = true;
 
+        int resolvedLevelNumber = ResolveCurrentLevelNumber();
+        if (resolvedLevelNumber > 0)
+        {
+            MenuManager.MarkLevelComplete(resolvedLevelNumber);
+        }
         if (lineDrawingController != null)
         {
             lineDrawingController.SetDrawingAllowed(false);
@@ -451,6 +478,41 @@ public class BrainItOnGameManager : MonoBehaviour
         }
 
         SetLevelEndMenuVisible(true);
+    }
+
+    private int ResolveCurrentLevelNumber()
+    {
+        if (currentLevelNumberOverride > 0)
+        {
+            return currentLevelNumberOverride;
+        }
+
+        string sceneName = SceneManager.GetActiveScene().name;
+        int value = 0;
+        bool foundDigit = false;
+
+        for (int i = 0; i < sceneName.Length; i++)
+        {
+            char c = sceneName[i];
+            if (c >= '0' && c <= '9')
+            {
+                value = (value * 10) + (c - '0');
+                foundDigit = true;
+            }
+        }
+
+        if (foundDigit && value > 0)
+        {
+            return value;
+        }
+
+        int buildIndex = SceneManager.GetActiveScene().buildIndex;
+        if (buildIndex > 0)
+        {
+            return buildIndex;
+        }
+
+        return 0;
     }
 
     private void SetLevelEndMenuVisible(bool isVisible)
