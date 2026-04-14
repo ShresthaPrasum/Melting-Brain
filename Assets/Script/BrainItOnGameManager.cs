@@ -41,7 +41,7 @@ public class BrainItOnGameManager : MonoBehaviour
     [SerializeField] private string levelEndShapesNeededPrefix = "Shapes Needed: ";
     [SerializeField] private string levelEndTimeTakenPrefix = "Time Taken: ";
     [SerializeField] private string levelEndTimeTakenSuffix = "s";
-    [SerializeField] private string homeSceneName = "Home";
+    [SerializeField] private string homeSceneName = "Levels";
 
     private bool isLevelWon = false;
     private bool ballFrozenByDrawing;
