@@ -21,13 +21,23 @@ public class LineDrawingController : MonoBehaviour
     [SerializeField] private float colliderThickness = 0.14f;
 
     [Header("Line Rigidbody After Release")]
-    [SerializeField] private RigidbodyType2D lineBodyTypeAfterRelease = RigidbodyType2D.Static;
-    [SerializeField] private float lineGravityAfterRelease = 0f;
-    [SerializeField] private bool freezeLineRotationAfterRelease = true;
+    [SerializeField] private RigidbodyType2D lineBodyTypeAfterRelease = RigidbodyType2D.Dynamic;
+    [SerializeField] private float lineGravityAfterRelease = 1f;
+    [SerializeField] private bool freezeLineRotationAfterRelease = false;
+    [SerializeField] private float massPerUnitLength = 0.5f;
 
     [Header("Drawing Rules")]
-    [SerializeField] private int maximumLinesPerRound = 1;
-    [SerializeField] private bool lockDrawingAfterLineLimit = true;
+    [SerializeField] private int maximumLinesPerRound = 3;
+    [SerializeField] private bool lockDrawingAfterLineLimit = false;
+
+    [Header("Collision Blocking")]
+    [SerializeField] private bool stopLineAtColliders = true;
+    [SerializeField] private bool lineCanCrossItself = true;
+    [SerializeField] private bool stopLineAtOtherDrawnLines = true;
+    [SerializeField] private bool preventStartingInsideBlocker = true;
+    [SerializeField] private LayerMask drawingBlockerLayers = ~0;
+    [SerializeField] private bool blockersIncludeTriggers = false;
+    [SerializeField] private float blockerSurfaceOffset = 0.01f;
 
     private readonly List<Vector2> lineWorldPoints = new List<Vector2>();
 
@@ -46,8 +56,11 @@ public class LineDrawingController : MonoBehaviour
 
     public event Action LineFinished;
     public event Action FirstLineFinished;
+    public event Action DrawingStarted;
+    public event Action DrawingStopped;
 
     public int FinishedLineCount => finishedLineCount;
+    public int MaximumLinesPerRound => maximumLinesPerRound;
 
     private void Awake()
     {
@@ -99,6 +112,8 @@ public class LineDrawingController : MonoBehaviour
 
     public void ClearAllDrawnLines()
     {
+        bool wasDrawing = isCurrentlyDrawing;
+
         for (int i = transform.childCount - 1; i >= 0; i--)
         {
             Destroy(transform.GetChild(i).gameObject);
@@ -114,6 +129,11 @@ public class LineDrawingController : MonoBehaviour
         currentLineRenderer = null;
         currentLinePolygonCollider = null;
         currentLineRigidbody = null;
+
+        if (wasDrawing)
+        {
+            DrawingStopped?.Invoke();
+        }
     }
 
     private void StartNewLine(Vector2 startWorldPoint)
@@ -135,6 +155,11 @@ public class LineDrawingController : MonoBehaviour
             {
                 return;
             }
+        }
+
+        if (preventStartingInsideBlocker && IsInsideBlockingCollider(startWorldPoint))
+        {
+            return;
         }
 
         currentLineObject = new GameObject("PlayerLine_" + (finishedLineCount + 1));
@@ -167,6 +192,8 @@ public class LineDrawingController : MonoBehaviour
         currentLineLength = 0f;
         isCurrentlyDrawing = true;
 
+        DrawingStarted?.Invoke();
+
         AddPointToCurrentLine(startWorldPoint);
     }
 
@@ -179,10 +206,21 @@ public class LineDrawingController : MonoBehaviour
         }
 
         Vector2 lastPoint = lineWorldPoints[lineWorldPoints.Count - 1];
+        bool hitBlockingCollider = TryGetClampedPointAtBlockingCollider(lastPoint, worldPoint, out Vector2 clampedWorldPoint);
+        if (hitBlockingCollider)
+        {
+            worldPoint = clampedWorldPoint;
+        }
+
         float newSegmentLength = Vector2.Distance(lastPoint, worldPoint);
 
         if (newSegmentLength < minimumDistanceBetweenPoints)
         {
+            if (hitBlockingCollider)
+            {
+                FinishCurrentLine();
+            }
+
             return;
         }
 
@@ -202,6 +240,12 @@ public class LineDrawingController : MonoBehaviour
 
         currentLineLength += newSegmentLength;
         AddPointToCurrentLine(worldPoint);
+
+        if (hitBlockingCollider)
+        {
+            FinishCurrentLine();
+            return;
+        }
 
         if (currentLineLength >= maximumLineLength - 0.0001f)
         {
@@ -295,6 +339,7 @@ public class LineDrawingController : MonoBehaviour
         }
 
         isCurrentlyDrawing = false;
+        DrawingStopped?.Invoke();
 
         if (lineWorldPoints.Count < 2)
         {
@@ -337,6 +382,10 @@ public class LineDrawingController : MonoBehaviour
         currentLineRigidbody.constraints = freezeLineRotationAfterRelease
             ? RigidbodyConstraints2D.FreezeRotation
             : RigidbodyConstraints2D.None;
+            
+        currentLineRigidbody.useAutoMass = false;
+        currentLineRigidbody.mass = Mathf.Max(0.1f, currentLineLength * massPerUnitLength);
+
         currentLineRigidbody.simulated = true;
         currentLineRigidbody.WakeUp();
     }
@@ -350,6 +399,135 @@ public class LineDrawingController : MonoBehaviour
 
         lineWorldPoints.Clear();
         currentLineLength = 0f;
+    }
+
+    private bool IsInsideBlockingCollider(Vector2 worldPoint)
+    {
+        if (!stopLineAtColliders)
+        {
+            return false;
+        }
+
+        Collider2D[] overlappingColliders = Physics2D.OverlapPointAll(worldPoint);
+        for (int i = 0; i < overlappingColliders.Length; i++)
+        {
+            if (IsBlockingCollider(overlappingColliders[i]))
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private bool TryGetClampedPointAtBlockingCollider(Vector2 fromWorldPoint, Vector2 toWorldPoint, out Vector2 clampedPoint)
+    {
+        clampedPoint = toWorldPoint;
+
+        if (!stopLineAtColliders)
+        {
+            return false;
+        }
+
+        Vector2 delta = toWorldPoint - fromWorldPoint;
+        float deltaMagnitude = delta.magnitude;
+        if (deltaMagnitude < 0.0001f)
+        {
+            return false;
+        }
+
+        RaycastHit2D[] hits = Physics2D.LinecastAll(fromWorldPoint, toWorldPoint);
+        if (hits == null || hits.Length == 0)
+        {
+            return false;
+        }
+
+        float nearestDistance = float.MaxValue;
+        bool foundBlockingHit = false;
+
+        for (int i = 0; i < hits.Length; i++)
+        {
+            Collider2D hitCollider = hits[i].collider;
+            if (!IsBlockingCollider(hitCollider))
+            {
+                continue;
+            }
+
+            float hitDistance = hits[i].distance;
+            if (hitDistance < nearestDistance)
+            {
+                nearestDistance = hitDistance;
+                foundBlockingHit = true;
+            }
+        }
+
+        if (!foundBlockingHit)
+        {
+            return false;
+        }
+
+        Vector2 direction = delta / deltaMagnitude;
+        float allowedDistance = Mathf.Max(0f, nearestDistance - blockerSurfaceOffset);
+        clampedPoint = fromWorldPoint + direction * allowedDistance;
+        return true;
+    }
+
+    private bool IsBlockingCollider(Collider2D collider)
+    {
+        if (collider == null)
+        {
+            return false;
+        }
+
+        bool isDrawnLineCollider = TryGetLineRendererOwner(collider, out LineRenderer ownerLineRenderer);
+        if (isDrawnLineCollider)
+        {
+            if (lineCanCrossItself && currentLineRenderer != null && ownerLineRenderer == currentLineRenderer)
+            {
+                return false;
+            }
+
+            return stopLineAtOtherDrawnLines;
+        }
+
+        if (!IsLayerIncludedInMask(collider.gameObject.layer, drawingBlockerLayers))
+        {
+            return false;
+        }
+
+        if (!blockersIncludeTriggers && collider.isTrigger)
+        {
+            return false;
+        }
+
+        if (currentLinePolygonCollider != null && collider == currentLinePolygonCollider)
+        {
+            return false;
+        }
+
+        if (currentLineObject != null && collider.transform.IsChildOf(currentLineObject.transform))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    private static bool IsLayerIncludedInMask(int layer, LayerMask mask)
+    {
+        return (mask.value & (1 << layer)) != 0;
+    }
+
+    private static bool TryGetLineRendererOwner(Collider2D collider, out LineRenderer ownerLineRenderer)
+    {
+        ownerLineRenderer = collider.GetComponent<LineRenderer>();
+        if (ownerLineRenderer != null)
+        {
+            return true;
+        }
+
+        ownerLineRenderer = collider.GetComponentInParent<LineRenderer>();
+        return ownerLineRenderer != null;
     }
 
     private Material GetLineMaterial()

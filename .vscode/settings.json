@@ -67,5 +67,5 @@
         "*.sln": "*.csproj",
         "*.slnx": "*.csproj"
     },
-    "dotnet.defaultSolution": "Donot-Spill.slnx"
+    "dotnet.defaultSolution": "Melting Brain.slnx"
 }
