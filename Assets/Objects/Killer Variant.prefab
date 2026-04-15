@@ -109,7 +109,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BallDestroyAndRestart
   specificBallRigidbody: {fileID: 0}
-  matchByTagWhenSpecificBallMissing: 0
+  matchByTagWhenSpecificBallMissing: 1
   ballTag: Ball
   destroyBallOnTouch: 1
   restartDelaySeconds: 0.5
