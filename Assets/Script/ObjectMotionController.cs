@@ -35,6 +35,7 @@ public class ObjectMotionController : MonoBehaviour
     [Header("Move")]
     [SerializeField] private Vector3 moveOffset = new Vector3(2f, 0f, 0f);
     [SerializeField] private float moveDuration = 2f;
+    [SerializeField] private bool startMoveFromPositiveOffset = true;
 
     [Header("Rotate")]
     [SerializeField] private Vector3 rotationOffsetEuler = new Vector3(0f, 0f, 90f);
@@ -233,8 +234,18 @@ public class ObjectMotionController : MonoBehaviour
     {
         if (UsesMove())
         {
-            Vector3 targetPosition = initialPosition + moveOffset;
-            Vector3 nextPosition = Vector3.LerpUnclamped(initialPosition, targetPosition, moveT);
+            float adjustedMoveT = moveT;
+            if (loopMode == LoopMode.Loop)
+            {
+                // Convert sawtooth 0..1 loop into smooth back-and-forth 0..1..0.
+                adjustedMoveT = Mathf.PingPong(moveT * 2f, 1f);
+            }
+
+            Vector3 positiveBound = initialPosition + moveOffset;
+            Vector3 negativeBound = initialPosition - moveOffset;
+            Vector3 from = startMoveFromPositiveOffset ? positiveBound : negativeBound;
+            Vector3 to = startMoveFromPositiveOffset ? negativeBound : positiveBound;
+            Vector3 nextPosition = Vector3.LerpUnclamped(from, to, adjustedMoveT);
 
             if (useLocalSpace)
             {
