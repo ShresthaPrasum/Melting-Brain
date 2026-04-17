@@ -622,11 +622,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7610555260554572934, guid: f7d2e1103bf0a0b4391b65a362758710, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.411525
+      value: 5.79
       objectReference: {fileID: 0}
     - target: {fileID: 7610555260554572934, guid: f7d2e1103bf0a0b4391b65a362758710, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -2.2324007
+      value: -3.55
       objectReference: {fileID: 0}
     - target: {fileID: 7610555260554572934, guid: f7d2e1103bf0a0b4391b65a362758710, type: 3}
       propertyPath: m_LocalPosition.z
@@ -1194,7 +1194,7 @@ Transform:
   m_GameObject: {fileID: 431271158}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -4.45, y: -3.94, z: 0}
+  m_LocalPosition: {x: 0.059999526, y: 1.2099994, z: 0}
   m_LocalScale: {x: 0.32825, y: 0.32825, z: 0.32825}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2184,7 +2184,7 @@ Transform:
   m_GameObject: {fileID: 696897055}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: -0.20000002, y: 2.73, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2275,11 +2275,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 1289688799649415459, guid: 235a1ebbcf7d455458b49c841bc7ff68, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0.08
+      value: 0.05
       objectReference: {fileID: 0}
     - target: {fileID: 1289688799649415459, guid: 235a1ebbcf7d455458b49c841bc7ff68, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 1.85
+      value: 0.28
       objectReference: {fileID: 0}
     - target: {fileID: 1289688799649415459, guid: 235a1ebbcf7d455458b49c841bc7ff68, type: 3}
       propertyPath: m_LocalPosition.z
@@ -3700,7 +3700,7 @@ MonoBehaviour:
   goalHoldTimerDecimals: 1
   hideGoalHoldTimerWhenIdle: 1
   releaseTimerDecimals: 1
-  levelTimeLimitSeconds: 45
+  levelTimeLimitSeconds: 20
   levelEndMenuRoot: {fileID: 1339259727}
   levelEndShapesNeededTextTMP: {fileID: 1565113242}
   levelEndTimeTakenTextTMP: {fileID: 1695468865}
@@ -3710,7 +3710,7 @@ MonoBehaviour:
   levelEndTimeTakenPrefix: ' '
   levelEndTimeTakenSuffix: s
   homeSceneName: Levels
-  currentLevelNumberOverride: 28
+  currentLevelNumberOverride: 29
 --- !u!1 &1734640078
 GameObject:
   m_ObjectHideFlags: 0
@@ -3766,7 +3766,7 @@ MonoBehaviour:
   lineGravityAfterRelease: 1
   freezeLineRotationAfterRelease: 0
   massPerUnitLength: 0.5
-  maximumLinesPerRound: 7
+  maximumLinesPerRound: 3
   lockDrawingAfterLineLimit: 1
   stopLineAtColliders: 1
   lineCanCrossItself: 1
@@ -4235,7 +4235,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: '28
+  m_text: '29
+
 
 '
   m_isRightToLeft: 0
@@ -5206,11 +5207,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 7533679328528823092, guid: ea237aa94dbf335448744587e1fe492c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -4.9699993
+      value: -0.46
       objectReference: {fileID: 0}
     - target: {fileID: 7533679328528823092, guid: ea237aa94dbf335448744587e1fe492c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: -2.8799996
+      value: 2.27
       objectReference: {fileID: 0}
     - target: {fileID: 7533679328528823092, guid: ea237aa94dbf335448744587e1fe492c, type: 3}
       propertyPath: m_LocalPosition.z
